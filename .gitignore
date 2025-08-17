@@ -1,0 +1,109 @@
+# ========================================
+# Python cache / build
+# ========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Build / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ========================================
+# Virtual environments
+# ========================================
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ========================================
+# Jupyter & notebooks
+# ========================================
+.ipynb_checkpoints/
+*.ipynb~
+*.jpnb
+# Lab metadata
+.jupyter/
+.lab/
+.jupyterlab/
+# VSCode Jupyter temp
+*.ipynb_checkpoints/*
+*.nbconvert.ipynb
+
+# ========================================
+# Logs & experiments
+# ========================================
+*.log
+logs/
+wandb/
+runs/              # TensorBoard / Lightning logs
+mlruns/            # MLflow
+*.out
+*.err
+
+# ========================================
+# Data & large files
+# ========================================
+# *.csv
+*.tsv
+*.xlsx
+*.parquet
+*.pkl
+*.npy
+*.npz
+*.h5
+*.pt
+*.pth
+*.joblib
+
+# Specific dataset(s)
+diabetes_synthetic_1M.csv
+
+# Optional: ignore all data in /data folder
+data/*
+
+# ========================================
+# IDE / Editor settings
+# ========================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm / JetBrains
+.idea/
+
+# Others
+*.swp
+*.swo
+
+# ========================================
+# OS generated files
+# ========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
