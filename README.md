@@ -4,9 +4,7 @@ Predicts diabetes risk from routine lab values and OGTT readings. Compares Logis
 
 ## Live Demo
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-app.streamlit.app)
-
-> Replace the link above after deploying to [Streamlit Community Cloud](https://streamlit.io/cloud).
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://diabetes-prediction-test.streamlit.app/)
 
 ---
 
