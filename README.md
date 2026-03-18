@@ -1,48 +1,85 @@
-# Diabetes Risk Modeling (Quick Start)
+# Diabetes Risk Prediction
 
-Predict diabetes risk from routine labs and OGTT readings using clean, reproducible notebooks.
+Predicts diabetes risk from routine lab values and OGTT readings. Compares Logistic Regression, Random Forest, XGBoost, and a Keras neural net on a 5,000-patient synthetic dataset.
 
-## What’s inside
-- `notebooks/diabetes.ipynb` — main workflow (EDA → FE → train/val/test → plots → save model → input form).
-- `data/diabetes_sample_5000.csv` — sample dataset (~5k rows).
-- `models/model.joblib` — saved pipeline (created after training).
-- `requirements.txt` — minimal dependencies.
+## Live Demo
 
-## Setup
-```bash
-git clone <your-repo-url>.git
-cd <your-repo-folder>
-python -m venv .venv          # (macOS/Linux: python3 -m venv .venv)
-# Windows:
-.\.venv\Scriptsctivate
-# macOS/Linux:
-source .venv/bin/activate
-pip install -U pip
-pip install -r requirements.txt
-jupyter lab  # or: jupyter notebook
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-app.streamlit.app)
+
+> Replace the link above after deploying to [Streamlit Community Cloud](https://streamlit.io/cloud).
+
+---
+
+## Results
+
+| Model | AUROC | Avg Precision | Precision | Recall |
+|---|---|---|---|---|
+| Random Forest | 1.000 | 1.000 | 1.000 | 0.999 |
+| XGBoost | 1.000 | 1.000 | 1.000 | 0.996 |
+| Neural Net (Keras) | 1.000 | 1.000 | 0.999 | 0.997 |
+| Logistic Regression | 0.958 | 0.947 | 0.872 | 0.846 |
+
+Threshold selected per-model by maximising the F1 point on the PR curve (validation set).
+
+---
+
+## Project structure
+
+```
+diabetes-prediction/
+├── diabetes_prediction.ipynb   # main notebook
+├── diabetes_sample_5000.csv    # dataset
+├── app.py                      # Streamlit demo
+└── requirements.txt
 ```
 
-## Run
-1. Open `notebooks/diabetes.ipynb`.
-2. Run cells top-to-bottom:
-   - Load `data/diabetes_sample_5000.csv`.
-   - Apply **feature engineering** (`add_clinical_features`).
-   - Train models (LogReg baseline; RF/XGBoost optional).
-   - Validate (threshold via PR-curve), view metrics/plots.
-   - **Save** model → `models/model.joblib`.
+## Setup
 
-## Try your own readings
-- At the end of the notebook, use **“USER INPUT FORM”** (ipywidgets).
-- Enter values → click **Predict** → see **AT RISK / SAFE** + probability.
-- If you see a warning about `add_clinical_features`, run that FE cell first.
+```bash
+git clone https://github.com/your-username/diabetes-prediction.git
+cd diabetes-prediction
 
-## Optional
-- **GPU (XGBoost):** set `tree_method="gpu_hist"` in the XGBoost cell.
-- **Data Warehouse:** load with `pandas.read_sql(...)` via SQLAlchemy, then follow the same pipeline.
+python -m venv .venv
+# Windows
+.\.venv\Scripts\activate
+# macOS / Linux
+source .venv/bin/activate
 
-## Troubleshooting (very short)
-- Widgets not showing → `pip install ipywidgets` and restart kernel.
-- Different columns → update `feature_cols` and keep FE consistent at train & inference.
-- Keep the **test set untouched** until final evaluation; prefer K-Fold CV on the train split.
+pip install -U pip
+pip install -r requirements.txt
+```
 
-> Educational use only — not a medical device or diagnosis.
+## Run the notebook
+
+```bash
+jupyter lab
+```
+
+Open `diabetes_prediction.ipynb` and run cells top-to-bottom:
+
+1. Load and encode data
+2. Feature engineering (`add_clinical_features`)
+3. Train / validate / test split
+4. Train all models, compare metrics
+5. Use the interactive prediction form at the bottom
+
+## Run the Streamlit app locally
+
+```bash
+streamlit run app.py
+```
+
+## Features engineered
+
+From the raw labs the notebook derives:
+- OGTT slopes and deltas (0→1h, 1→2h, 0→2h)
+- Trapezoidal AUC of the glucose curve
+- HOMA-IR (fasting insulin × fasting glucose / 405)
+- Clinical threshold flags (pre-diabetes / diabetes by FPG, OGTT-2h, BMI)
+- Log-transforms of skewed lab values
+- Interaction terms (BMI × FPG, BMI × age)
+
+## Notes
+
+- Dataset is synthetic and for educational purposes only.
+- Not a medical device. Do not use for clinical decisions.

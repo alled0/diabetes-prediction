@@ -2,14 +2,8 @@ numpy
 pandas
 matplotlib
 scikit-learn
-scikeras
-tensorflow
 seaborn
-keras
 xgboost
-protobuf
-
-torch
-torchvision
-torchaudio
-tqdm
+streamlit
+joblib
+ipywidgets

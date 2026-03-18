@@ -80,6 +80,11 @@ mlruns/            # MLflow
 # Specific dataset(s)
 diabetes_synthetic_1M.csv
 
+# Working / draft files
+DIABETES_MODEL_DETAILED_GUIDE.ipynb
+DIABETES_MODEL_DETAILED_GUIDE.md
+diabetes_model_zoo_gpu_v7_full.ipynb
+
 # Optional: ignore all data in /data folder
 data/*
 
