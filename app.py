@@ -12,75 +12,25 @@ from sklearn.metrics import precision_recall_curve
 CSV_PATH = "diabetes_sample_5000.csv"
 TARGET_COL = "diabetes_label"
 
-
-def add_clinical_features(X: pd.DataFrame) -> pd.DataFrame:
-    X = X.copy()
-
-    g0  = X.get("glucose_fasting")
-    g1  = X.get("ogtt_1h_glucose")
-    g2  = X.get("ogtt_2h_glucose")
-    bmi = X.get("bmi")
-    ins = X.get("insulin_fasting")
-    cpe = X.get("c_peptide_fasting")
-    age = X.get("age")
-
-    if g0 is not None and g1 is not None:
-        X["ogtt_delta_1h"]   = (g1 - g0).astype(float)
-        X["ogtt_slope_0_1h"] = (g1 - g0).astype(float)
-    if g0 is not None and g2 is not None:
-        X["ogtt_delta_2h"]   = (g2 - g0).astype(float)
-        X["ogtt_slope_0_2h"] = (g2 - g0).astype(float)
-    if g1 is not None and g2 is not None:
-        X["ogtt_slope_1_2h"] = (g2 - g1).astype(float)
-    if g0 is not None and g1 is not None and g2 is not None:
-        X["ogtt_auc_trap"] = (0.5*(g0 + g1) + 0.5*(g1 + g2)).astype(float)
-
-    if ins is not None and g0 is not None:
-        X["homa_ir"] = (ins * g0 / 405.0).astype(float)
-
-    if g0 is not None:
-        X["fpg_prediabetes"] = ((g0 >= 100) & (g0 < 126)).astype(int)
-        X["fpg_diabetes"]    = (g0 >= 126).astype(int)
-    if g2 is not None:
-        X["ogtt2h_prediabetes"] = ((g2 >= 140) & (g2 < 200)).astype(int)
-        X["ogtt2h_diabetes"]    = (g2 >= 200).astype(int)
-    if bmi is not None:
-        X["bmi_overweight"] = ((bmi >= 25) & (bmi < 30)).astype(int)
-        X["bmi_obese"]      = (bmi >= 30).astype(int)
-
-    if ins is not None and cpe is not None:
-        X["insulin_cpep_ratio"] = (ins / (cpe + 1e-6)).astype(float)
-    if bmi is not None and g0 is not None:
-        X["bmi_x_fpg"] = (bmi * g0).astype(float)
-    if bmi is not None and age is not None:
-        X["bmi_x_age"] = (bmi * age).astype(float)
-
-    for col in ["age", "bmi", "glucose_fasting"]:
-        if col in X.columns:
-            X[f"{col}_sq"] = X[col].astype(float) ** 2
-
-    for col in ["insulin_fasting", "c_peptide_fasting", "glucose_fasting"]:
-        if col in X.columns:
-            X[f"log1p_{col}"] = np.log1p(X[col].astype(float).clip(lower=0))
-
-    return X
+LIFESTYLE_WEIGHTS = {
+    "family_history": 0.12,
+    "hypertension":   0.10,
+    "sedentary":      0.09,
+    "high_sugar_diet": 0.08,
+    "smoking":        0.06,
+}
 
 
-@st.cache_resource(show_spinner="Training model...")
+@st.cache_resource(show_spinner="Loading model...")
 def load_model():
     if not Path(CSV_PATH).exists():
-        return None, None, None
+        return None, None
 
     df = pd.read_csv(CSV_PATH)
     df["gender"] = (df["gender"].str.strip().str.lower() == "male").astype(int)
 
-    ID_LIKE = {"id", "patient_id"}
-    feature_cols = [
-        c for c in df.columns
-        if c != TARGET_COL and c.lower() not in ID_LIKE and not c.lower().endswith("id")
-    ]
-
-    X = df[feature_cols].copy()
+    features = ["age", "gender", "bmi"]
+    X = df[features].copy()
     y = df[TARGET_COL].astype(int)
 
     X_train, X_val, y_train, y_val = train_test_split(
@@ -89,87 +39,155 @@ def load_model():
 
     pipe = Pipeline([
         ("imp", SimpleImputer(strategy="median")),
-        ("sc", StandardScaler()),
+        ("sc",  StandardScaler()),
         ("clf", LogisticRegression(max_iter=1000, class_weight="balanced", solver="lbfgs")),
     ])
     pipe.fit(X_train, y_train)
 
-    # pick threshold from validation set
     proba_val = pipe.predict_proba(X_val)[:, 1]
     prec, rec, thr = precision_recall_curve(y_val, proba_val)
     J = prec[:-1] + rec[:-1] - 1.0
     threshold = float(thr[int(np.nanargmax(J))]) if thr.size > 0 else 0.5
 
-    return pipe, feature_cols, threshold
+    return pipe, threshold
 
 
-def build_input() -> pd.DataFrame:
-    st.sidebar.header("Patient readings")
+def lifestyle_adjustment(answers: dict) -> float:
+    total = sum(LIFESTYLE_WEIGHTS[k] for k, v in answers.items() if v)
+    return min(total, 0.40)
 
-    age    = st.sidebar.slider("Age (years)", 18, 90, 52)
-    gender = st.sidebar.radio("Gender", ["Male", "Female"], horizontal=True)
-    bmi    = st.sidebar.slider("BMI (kg/m²)", 15.0, 55.0, 29.4, step=0.1)
 
-    st.sidebar.markdown("**Fasting labs**")
-    fpg  = st.sidebar.slider("Fasting glucose (mg/dL)", 60, 400, 118)
-    ins  = st.sidebar.slider("Fasting insulin (µU/mL)", 1.0, 200.0, 12.3, step=0.1)
-    cpep = st.sidebar.slider("C-peptide (ng/mL)", 0.1, 15.0, 1.8, step=0.1)
-
-    st.sidebar.markdown("**OGTT**")
-    ogtt1 = st.sidebar.slider("OGTT 1h glucose (mg/dL)", 60, 500, 165)
-    ogtt2 = st.sidebar.slider("OGTT 2h glucose (mg/dL)", 60, 500, 185)
-
-    return pd.DataFrame([{
-        "age": age,
-        "gender": 1 if gender == "Male" else 0,
-        "bmi": bmi,
-        "glucose_fasting": fpg,
-        "insulin_fasting": ins,
-        "c_peptide_fasting": cpep,
-        "ogtt_1h_glucose": ogtt1,
-        "ogtt_2h_glucose": ogtt2,
-    }])
+def risk_label(score: float):
+    if score < 0.25:
+        return "Low Risk", "#27ae60", "Your responses suggest a low risk of diabetes."
+    if score < 0.50:
+        return "Moderate Risk", "#e67e22", "Some risk factors are present. Consider discussing with a doctor."
+    return "High Risk", "#c0392b", "Several risk factors are present. A medical check-up is recommended."
 
 
 def main():
-    st.set_page_config(page_title="Diabetes Risk Predictor", page_icon="", layout="wide")
+    st.set_page_config(page_title="Diabetes Risk Check", page_icon="", layout="centered")
 
-    st.title("Diabetes Risk Predictor")
-    st.caption("Logistic Regression trained on 5,000 synthetic patient records. For educational purposes only — not a medical device.")
+    st.title("Diabetes Risk Check")
+    st.caption("Answer a few simple questions to get a personal risk estimate. No lab tests needed.")
+    st.markdown("---")
 
-    model, feature_cols, threshold = load_model()
-
+    model, threshold = load_model()
     if model is None:
-        st.error(f"Dataset not found: `{CSV_PATH}`. Make sure the CSV is in the same directory as app.py.")
+        st.error(f"Data file not found: `{CSV_PATH}`.")
         return
 
-    X_raw = build_input()
-    X_fe = add_clinical_features(X_raw)
+    # --- Section 1: Basic info ---
+    st.subheader("About you")
+    col1, col2 = st.columns(2)
+    age    = col1.slider("How old are you?", 18, 90, 40)
+    gender = col2.radio("Gender", ["Male", "Female"], horizontal=True)
 
-    # align columns to what the model was trained on
-    for col in feature_cols:
-        if col not in X_fe.columns:
-            X_fe[col] = 0.0
-    X_fe = X_fe[feature_cols]
+    col3, col4 = st.columns(2)
+    height_cm = col3.number_input("Height (cm)", min_value=120, max_value=230, value=170)
+    weight_kg = col4.number_input("Weight (kg)", min_value=30, max_value=250, value=75)
 
-    proba = float(model.predict_proba(X_fe)[0, 1])
-    pred  = int(proba >= threshold)
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Probability", f"{proba:.1%}")
-    col2.metric("Threshold", f"{threshold:.2f}")
-    col3.metric("Prediction", "AT RISK" if pred == 1 else "LOW RISK")
-
-    if pred == 1:
-        st.error("**AT RISK** — model predicts elevated diabetes risk based on the values provided.")
-    else:
-        st.success("**LOW RISK** — model does not flag elevated diabetes risk based on the values provided.")
-
-    with st.expander("Engineered features passed to model"):
-        st.dataframe(X_fe.T.rename(columns={0: "value"}), use_container_width=True)
+    bmi = weight_kg / ((height_cm / 100) ** 2)
+    bmi_category = (
+        "Underweight" if bmi < 18.5 else
+        "Normal"      if bmi < 25   else
+        "Overweight"  if bmi < 30   else
+        "Obese"
+    )
+    st.caption(f"Your BMI: **{bmi:.1f}** ({bmi_category})")
 
     st.markdown("---")
-    st.caption("Dataset is synthetic. Results are illustrative only and should not guide clinical decisions.")
+
+    # --- Section 2: Lifestyle ---
+    st.subheader("Lifestyle & health history")
+
+    family_history = st.checkbox("A parent or sibling has been diagnosed with diabetes")
+    hypertension   = st.checkbox("I have been told I have high blood pressure")
+    smoking        = st.checkbox("I smoke or have smoked in the past 5 years")
+
+    activity = st.select_slider(
+        "How physically active are you?",
+        options=["Rarely / never", "Light (1-2x per week)", "Moderate (3-4x per week)", "Very active (daily)"],
+        value="Light (1-2x per week)",
+    )
+    sedentary = activity == "Rarely / never"
+
+    diet = st.select_slider(
+        "How would you describe your daily diet?",
+        options=["Lots of sugary / processed food", "Mixed", "Mostly whole foods / vegetables"],
+        value="Mixed",
+    )
+    high_sugar_diet = diet == "Lots of sugary / processed food"
+
+    st.markdown("---")
+
+    # --- Compute risk ---
+    X_input = pd.DataFrame([{
+        "age":    age,
+        "gender": 1 if gender == "Male" else 0,
+        "bmi":    bmi,
+    }])
+    base_proba = float(model.predict_proba(X_input)[0, 1])
+
+    lifestyle_adj = lifestyle_adjustment({
+        "family_history":  family_history,
+        "hypertension":    hypertension,
+        "smoking":         smoking,
+        "sedentary":       sedentary,
+        "high_sugar_diet": high_sugar_diet,
+    })
+
+    final_score = min(base_proba + lifestyle_adj, 0.97)
+    label, color, advice = risk_label(final_score)
+
+    # --- Result ---
+    st.subheader("Your result")
+
+    st.markdown(
+        f"""
+        <div style="border: 2px solid {color}; border-radius: 12px; padding: 20px; text-align: center;">
+            <div style="font-size: 2rem; font-weight: 700; color: {color};">{label}</div>
+            <div style="font-size: 1.1rem; margin-top: 8px; color: #555;">{advice}</div>
+            <div style="font-size: 0.9rem; margin-top: 12px; color: #888;">Risk score: {final_score:.0%}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.progress(min(final_score, 1.0))
+
+    # --- Breakdown ---
+    with st.expander("What's driving your score?"):
+        factors = []
+        if bmi >= 30:
+            factors.append(("BMI in obese range", "high"))
+        elif bmi >= 25:
+            factors.append(("BMI in overweight range", "medium"))
+        if age >= 45:
+            factors.append(("Age 45 or older", "medium"))
+        if family_history:
+            factors.append(("Family history of diabetes", "high"))
+        if hypertension:
+            factors.append(("High blood pressure", "medium"))
+        if smoking:
+            factors.append(("Smoking history", "medium"))
+        if sedentary:
+            factors.append(("Low physical activity", "medium"))
+        if high_sugar_diet:
+            factors.append(("High sugar / processed diet", "medium"))
+
+        if not factors:
+            st.write("No major risk factors detected in your answers.")
+        else:
+            for name, level in factors:
+                icon = "🔴" if level == "high" else "🟡"
+                st.write(f"{icon} {name}")
+
+    st.markdown("---")
+    st.caption(
+        "This tool is for educational purposes only and is not a medical diagnosis. "
+        "If you are concerned about your diabetes risk, please consult a healthcare professional."
+    )
 
 
 if __name__ == "__main__":
