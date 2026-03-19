@@ -75,10 +75,14 @@ mlruns/            # MLflow
 *.h5
 *.pt
 *.pth
-*.joblib
+# *.joblib  — allow model.joblib to be committed
 
 # Specific dataset(s)
 diabetes_synthetic_1M.csv
+
+# Keep the BRFSS archive tracked
+!archive/
+!archive/*.csv
 
 # Working / draft files
 DIABETES_MODEL_DETAILED_GUIDE.ipynb
