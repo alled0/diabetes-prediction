@@ -47,11 +47,11 @@ def main():
 
     st.markdown("""
         <style>
-            [data-testid="stAppViewContainer"] { background-color: #e8edf2 !important; }
-            [data-testid="stHeader"] { background-color: #e8edf2 !important; }
-            [data-testid="stSidebar"] { background-color: #dde3ea !important; }
-            .block-container { padding-top: 2.5rem; max-width: 720px; background-color: #e8edf2; }
-            section[data-testid="stMain"] { background-color: #e8edf2; }
+            [data-testid="stAppViewContainer"] { background-color: #b8c4ce !important; }
+            [data-testid="stHeader"] { background-color: #b8c4ce !important; }
+            [data-testid="stSidebar"] { background-color: #a8b4be !important; }
+            .block-container { padding-top: 2.5rem; max-width: 720px; background-color: #b8c4ce; }
+            section[data-testid="stMain"] { background-color: #b8c4ce; }
             footer { visibility: hidden; }
             .result-box {
                 border-radius: 12px;
