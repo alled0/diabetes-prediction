@@ -47,11 +47,11 @@ def main():
 
     st.markdown("""
         <style>
-            [data-testid="stAppViewContainer"] { background-color: #b8c4ce !important; }
-            [data-testid="stHeader"] { background-color: #b8c4ce !important; }
-            [data-testid="stSidebar"] { background-color: #a8b4be !important; }
-            .block-container { padding-top: 2.5rem; max-width: 720px; background-color: #b8c4ce; }
-            section[data-testid="stMain"] { background-color: #b8c4ce; }
+            [data-testid="stAppViewContainer"] { background-color: #1e293b !important; }
+            [data-testid="stHeader"] { background-color: #1e293b !important; }
+            [data-testid="stSidebar"] { background-color: #162032 !important; }
+            .block-container { padding-top: 2.5rem; max-width: 720px; background-color: #1e293b; }
+            section[data-testid="stMain"] { background-color: #1e293b; }
             footer { visibility: hidden; }
             .result-box {
                 border-radius: 12px;
@@ -171,7 +171,7 @@ def main():
             <div class="gauge">
                 <div class="gauge-bar" style="width:{proba*100:.1f}%;background:{color};"></div>
             </div>
-            <div class="risk-advice" style="color:#374151;">{advice}</div>
+            <div class="risk-advice" style="color:#e2e8f0;">{advice}</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -195,7 +195,7 @@ def main():
             for name, c in factors:
                 st.markdown(
                     f"<div style='display:flex;align-items:center;gap:10px;padding:8px 0;"
-                    f"border-bottom:1px solid #f1f5f9;color:#1e293b;'>"
+                    f"border-bottom:1px solid #334155;color:#e2e8f0;'>"
                     f"<span style='width:8px;height:8px;border-radius:50%;background:{c};"
                     f"display:inline-block;flex-shrink:0;'></span>{name}</div>",
                     unsafe_allow_html=True,
