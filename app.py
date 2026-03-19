@@ -28,18 +28,18 @@ def load_model():
 
 
 def bmi_category(bmi):
-    if bmi < 18.5: return "Underweight", "#1d4ed8"
-    if bmi < 25:   return "Healthy",     "#15803d"
-    if bmi < 30:   return "Overweight",  "#92400e"
-    return "Obese", "#b91c1c"
+    if bmi < 18.5: return "Underweight", "#3b82f6"
+    if bmi < 25:   return "Normal",      "#16a34a"
+    if bmi < 30:   return "Overweight",  "#ea580c"
+    return "Obese", "#dc2626"
 
 
 def risk_config(pred, proba):
     if pred == 0:
-        return "Low risk", "#15803d", "#dcfce7", "#14532d", "No major risk factors detected. Keep up your healthy habits."
+        return "Low Risk", "#16a34a", "#f0fdf4", "No major risk factors detected. Keep up your healthy habits."
     if proba < 0.65:
-        return "Moderate risk", "#92400e", "#fef3c7", "#78350f", "Some risk factors present. Small changes can make a big difference."
-    return "Elevated risk", "#b91c1c", "#fee2e2", "#7f1d1d", "Several risk factors detected. Consider speaking with a healthcare professional."
+        return "Moderate Risk", "#ea580c", "#fff7ed", "Some risk factors present. Small changes can make a big difference."
+    return "High Risk", "#dc2626", "#fef2f2", "Several risk factors detected. Consider speaking with a healthcare professional."
 
 
 def main():
@@ -47,118 +47,23 @@ def main():
 
     st.markdown("""
         <style>
-            /* ── Page background ── */
-            [data-testid="stAppViewContainer"] { background-color: #f0ebe1 !important; }
-            [data-testid="stHeader"]           { background-color: #f0ebe1 !important; }
-            [data-testid="stSidebar"]          { background-color: #e8e0d4 !important; }
-            section[data-testid="stMain"]      { background-color: #f0ebe1; }
-            .block-container {
-                padding-top: 2.5rem;
-                max-width: 680px;
-                background-color: #f0ebe1;
-            }
+            [data-testid="stAppViewContainer"] { background-color: #1e293b !important; }
+            [data-testid="stHeader"] { background-color: #1e293b !important; }
+            [data-testid="stSidebar"] { background-color: #162032 !important; }
+            .block-container { padding-top: 2.5rem; max-width: 720px; background-color: #1e293b; }
+            section[data-testid="stMain"] { background-color: #1e293b; }
             footer { visibility: hidden; }
-
-            /* ── Typography ── */
-            h1, h2, h3, p, label, div {
-                color: #2c2416;
-            }
-
-            /* ── Streamlit widgets ── */
-            .stSlider > label,
-            .stCheckbox > label,
-            .stRadio > label,
-            .stSelectbox > label {
-                color: #2c2416 !important;
-                font-size: 0.875rem !important;
-            }
-
-            /* slider track */
-            [data-testid="stSlider"] .st-bq { background: #0d9488 !important; }
-            [data-testid="stSlider"] .st-br { background: #ddd5c5 !important; }
-
-            /* radio & checkbox accent */
-            .stRadio input:checked + div,
-            .stCheckbox input:checked + div { color: #0d9488 !important; }
-
-            /* selectbox */
-            div[data-baseweb="select"] > div {
-                background-color: #faf7f2 !important;
-                border-color: #ddd5c5 !important;
-                color: #2c2416 !important;
-            }
-
-            /* number input */
-            input[type="number"] {
-                background-color: #faf7f2 !important;
-                border-color: #ddd5c5 !important;
-                color: #2c2416 !important;
-            }
-
-            /* divider */
-            hr { border-color: #ddd5c5 !important; }
-
-            /* ── Section card wrapper ── */
-            .section-card {
-                background: #faf7f2;
-                border: 1px solid #ddd5c5;
-                border-radius: 14px;
-                padding: 1.25rem 1.5rem;
-                margin-bottom: 1rem;
-            }
-            .section-card h3 {
-                font-size: 0.7rem;
-                font-weight: 600;
-                letter-spacing: .07em;
-                text-transform: uppercase;
-                color: #a89e90 !important;
-                margin-bottom: .75rem;
-                padding-bottom: .5rem;
-                border-bottom: 1px solid #ece5d8;
-            }
-
-            /* ── Result box ── */
             .result-box {
-                border-radius: 14px;
+                border-radius: 12px;
                 padding: 28px 24px;
                 text-align: center;
                 margin: 4px 0 20px;
             }
-            .risk-label  { font-size: 1.75rem; font-weight: 600; }
-            .risk-score  { font-size: 0.85rem; margin-top: 4px; opacity: .8; }
-            .risk-advice { font-size: 0.9rem; margin-top: 12px; line-height: 1.65; }
-            .gauge {
-                background: rgba(0,0,0,.08);
-                border-radius: 99px;
-                height: 5px;
-                margin: 14px auto 2px;
-                max-width: 320px;
-                overflow: hidden;
-            }
+            .risk-label { font-size: 2rem; font-weight: 800; }
+            .risk-score { font-size: 0.9rem; margin-top: 4px; }
+            .risk-advice { font-size: 0.95rem; margin-top: 12px; line-height: 1.6; }
+            .gauge { background: #e2e8f0; border-radius: 99px; height: 8px; margin: 14px 0 2px; overflow: hidden; }
             .gauge-bar { height: 100%; border-radius: 99px; }
-
-            /* ── Factor rows (expander) ── */
-            .factor-row {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                padding: 8px 0;
-                border-bottom: 1px solid #ece5d8;
-                color: #2c2416;
-                font-size: 0.875rem;
-            }
-            .factor-row:last-child { border-bottom: none; }
-            .factor-dot {
-                width: 7px; height: 7px;
-                border-radius: 50%;
-                flex-shrink: 0;
-            }
-
-            /* expander header */
-            details > summary {
-                color: #2c2416 !important;
-                font-size: 0.875rem !important;
-            }
         </style>
     """, unsafe_allow_html=True)
 
@@ -167,16 +72,11 @@ def main():
         st.error(f"Model file not found: `{MODEL_PATH}`.")
         return
 
-    # ── Header ──────────────────────────────────────────────
-    st.markdown("## Diabetes risk check")
-    st.markdown(
-        "<p style='color:#7a6e60;font-size:0.9rem;margin-bottom:1.5rem;'>"
-        "Answer a few questions to get a personalised risk estimate based on CDC data."
-        "</p>",
-        unsafe_allow_html=True,
-    )
+    st.markdown("## Diabetes Risk Check")
+    st.markdown("Answer a few questions to get a personalised diabetes risk estimate.")
+    st.divider()
 
-    # ── About you ───────────────────────────────────────────
+    # About you
     st.markdown("### About you")
     col1, col2 = st.columns(2)
     age = col1.slider("Age", 18, 90, 45)
@@ -189,11 +89,9 @@ def main():
     bmi = weight_kg / (height_cm / 100) ** 2
     bmi_cat, bmi_color = bmi_category(bmi)
     st.markdown(
-        f"<span style='font-size:.9rem;color:#7a6e60;'>BMI: "
-        f"<strong style='color:#2c2416'>{bmi:.1f}</strong></span> &nbsp;"
-        f"<span style='background:{bmi_color}18;color:{bmi_color};"
-        f"padding:2px 10px;border-radius:99px;font-size:0.75rem;font-weight:600;"
-        f"border:1px solid {bmi_color}40'>{bmi_cat}</span>",
+        f"**BMI: {bmi:.1f}** &nbsp; "
+        f"<span style='background:{bmi_color};color:white;padding:2px 10px;"
+        f"border-radius:99px;font-size:0.78rem;font-weight:600;'>{bmi_cat}</span>",
         unsafe_allow_html=True,
     )
     st.markdown("")
@@ -213,7 +111,7 @@ def main():
     )
     st.divider()
 
-    # ── Health history ──────────────────────────────────────
+    # Health history
     st.markdown("### Health history")
     col5, col6 = st.columns(2)
     high_bp    = col5.checkbox("High blood pressure")
@@ -224,7 +122,7 @@ def main():
     diff_walk  = col6.checkbox("Difficulty walking or climbing stairs")
     st.divider()
 
-    # ── Lifestyle ───────────────────────────────────────────
+    # Lifestyle
     st.markdown("### Lifestyle")
     col7, col8 = st.columns(2)
     smoker   = col7.checkbox("Smoked 100+ cigarettes in lifetime")
@@ -234,7 +132,7 @@ def main():
     alcohol  = col7.checkbox("Heavy alcohol use")
     st.divider()
 
-    # ── General health ──────────────────────────────────────
+    # General health
     st.markdown("### How have you been feeling?")
     gen_hlth = st.select_slider(
         "Overall health",
@@ -244,13 +142,13 @@ def main():
     gen_hlth_val = ["Excellent", "Very Good", "Good", "Fair", "Poor"].index(gen_hlth) + 1
 
     col9, col10 = st.columns(2)
-    ment_hlth = col9.slider("Poor mental health days (past 30)", 0, 30, 0)
-    phys_hlth = col10.slider("Poor physical health days (past 30)", 0, 30, 0)
+    ment_hlth  = col9.slider("Poor mental health days (past 30)", 0, 30, 0)
+    phys_hlth  = col10.slider("Poor physical health days (past 30)", 0, 30, 0)
     healthcare = st.checkbox("Have health insurance or coverage", value=True)
     no_doc     = st.checkbox("Couldn't afford to see a doctor in the past year")
     st.divider()
 
-    # ── Predict ─────────────────────────────────────────────
+    # Predict
     row = {
         "HighBP": int(high_bp), "HighChol": int(high_chol), "CholCheck": int(chol_check),
         "BMI": round(bmi, 1), "Smoker": int(smoker), "Stroke": int(stroke),
@@ -263,55 +161,48 @@ def main():
     }
     proba = float(model.predict_proba(pd.DataFrame([row])[FEATURE_COLS])[0, 1])
     pred  = int(proba >= threshold)
-    label, color, bg, text_color, advice = risk_config(pred, proba)
+    label, color, bg, advice = risk_config(pred, proba)
 
-    # ── Result card ─────────────────────────────────────────
     st.markdown("### Your result")
     st.markdown(f"""
-        <div class="result-box" style="background:{bg};border:1px solid {color}30;">
+        <div class="result-box" style="background:{bg};border:1.5px solid {color}44;">
             <div class="risk-label" style="color:{color};">{label}</div>
             <div class="risk-score" style="color:{color};">Risk score: {proba:.0%}</div>
             <div class="gauge">
                 <div class="gauge-bar" style="width:{proba*100:.1f}%;background:{color};"></div>
             </div>
-            <div class="risk-advice" style="color:{text_color};">{advice}</div>
+            <div class="risk-advice" style="color:#e2e8f0;">{advice}</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # ── Contributing factors ─────────────────────────────────
     with st.expander("What factors are contributing to your score?"):
         factors = []
-        if bmi >= 30:         factors.append(("BMI in obese range",          "#b91c1c"))
-        elif bmi >= 25:       factors.append(("BMI in overweight range",      "#92400e"))
-        if age >= 45:         factors.append(("Age 45 or older",              "#92400e"))
-        if high_bp:           factors.append(("High blood pressure",          "#b91c1c"))
-        if high_chol:         factors.append(("High cholesterol",             "#92400e"))
-        if heart:             factors.append(("Heart disease history",        "#b91c1c"))
-        if stroke:            factors.append(("Stroke history",               "#b91c1c"))
-        if smoker:            factors.append(("Smoking history",              "#92400e"))
-        if not phys_act:      factors.append(("No recent physical activity",  "#92400e"))
-        if gen_hlth_val >= 4: factors.append(("Fair or poor general health",  "#b91c1c"))
-        if diff_walk:         factors.append(("Difficulty walking",           "#92400e"))
+        if bmi >= 30:         factors.append(("BMI in obese range", "#dc2626"))
+        elif bmi >= 25:       factors.append(("BMI in overweight range", "#ea580c"))
+        if age >= 45:         factors.append(("Age 45 or older", "#ea580c"))
+        if high_bp:           factors.append(("High blood pressure", "#dc2626"))
+        if high_chol:         factors.append(("High cholesterol", "#ea580c"))
+        if heart:             factors.append(("Heart disease history", "#dc2626"))
+        if stroke:            factors.append(("Stroke history", "#dc2626"))
+        if smoker:            factors.append(("Smoking history", "#ea580c"))
+        if not phys_act:      factors.append(("No recent physical activity", "#ea580c"))
+        if gen_hlth_val >= 4: factors.append(("Fair or poor general health", "#dc2626"))
+        if diff_walk:         factors.append(("Difficulty walking", "#ea580c"))
 
         if not factors:
-            st.markdown(
-                "<p style='color:#15803d;background:#dcfce7;padding:10px 14px;"
-                "border-radius:8px;font-size:0.875rem;border:1px solid #86efac'>"
-                "No major risk factors found in your answers.</p>",
-                unsafe_allow_html=True,
-            )
+            st.success("No major risk factors found in your answers.")
         else:
-            rows_html = "".join(
-                f"<div class='factor-row'>"
-                f"<span class='factor-dot' style='background:{c};'></span>{name}"
-                f"</div>"
-                for name, c in factors
-            )
-            st.markdown(rows_html, unsafe_allow_html=True)
+            for name, c in factors:
+                st.markdown(
+                    f"<div style='display:flex;align-items:center;gap:10px;padding:8px 0;"
+                    f"border-bottom:1px solid #334155;color:#e2e8f0;'>"
+                    f"<span style='width:8px;height:8px;border-radius:50%;background:{c};"
+                    f"display:inline-block;flex-shrink:0;'></span>{name}</div>",
+                    unsafe_allow_html=True,
+                )
 
-    # ── Footer ───────────────────────────────────────────────
     st.markdown(
-        "<p style='text-align:center;color:#a89e90;font-size:0.75rem;margin-top:24px;'>"
+        "<p style='text-align:center;color:#94a3b8;font-size:0.78rem;margin-top:24px;'>"
         "Trained on CDC BRFSS 2015 — 253,680 survey responses. "
         "For educational purposes only. Not a medical diagnosis.</p>",
         unsafe_allow_html=True,
