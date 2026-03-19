@@ -13,79 +13,41 @@ FEATURE_COLS = [
 
 CSS = """
 <style>
-    [data-testid="stAppViewContainer"] { background: #f8f9fb; }
-    [data-testid="stHeader"] { background: transparent; }
-    .section-card {
-        background: white;
-        border-radius: 14px;
-        padding: 24px 28px;
-        margin-bottom: 18px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
-    }
-    .section-title {
-        font-size: 1rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
+    [data-testid="stAppViewContainer"] > .main { padding-top: 2rem; }
+    h1 { text-align: center; }
+    .subtitle {
+        text-align: center;
         color: #888;
-        margin-bottom: 16px;
+        font-size: 0.95rem;
+        margin-top: -12px;
+        margin-bottom: 28px;
     }
     .result-card {
-        border-radius: 16px;
-        padding: 36px 28px;
+        border-radius: 14px;
+        padding: 32px 24px;
         text-align: center;
-        margin: 10px 0 20px 0;
+        margin: 8px 0 20px 0;
     }
-    .result-label {
-        font-size: 2.4rem;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-    }
-    .result-score {
-        font-size: 1rem;
-        margin-top: 6px;
-        opacity: 0.7;
-    }
-    .result-advice {
-        font-size: 1rem;
-        margin-top: 14px;
-        line-height: 1.5;
-    }
+    .result-label { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; }
+    .result-score { font-size: 0.95rem; margin-top: 4px; opacity: 0.75; }
+    .result-advice { font-size: 0.97rem; margin-top: 14px; line-height: 1.55; }
     .gauge-track {
-        background: #e9ecef;
+        background: rgba(128,128,128,0.2);
         border-radius: 99px;
-        height: 10px;
-        margin: 18px 0 6px 0;
+        height: 8px;
+        margin: 16px 0 4px 0;
         overflow: hidden;
     }
-    .gauge-fill {
-        height: 100%;
-        border-radius: 99px;
-        transition: width 0.5s ease;
-    }
-    .factor-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 7px 0;
-        border-bottom: 1px solid #f0f0f0;
-        font-size: 0.95rem;
-    }
-    .factor-dot {
-        width: 10px; height: 10px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-    .bmi-badge {
+    .gauge-fill { height: 100%; border-radius: 99px; }
+    .bmi-pill {
         display: inline-block;
-        padding: 3px 10px;
+        padding: 2px 10px;
         border-radius: 99px;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 600;
-        margin-left: 8px;
+        margin-left: 6px;
+        vertical-align: middle;
     }
-    div[data-testid="stCheckbox"] label { font-size: 0.95rem !important; }
-    .stSlider > label { font-size: 0.95rem !important; }
     footer { visibility: hidden; }
 </style>
 """
@@ -107,25 +69,22 @@ def load_model():
 
 
 def bmi_category(bmi):
-    if bmi < 18.5:
-        return "Underweight", "#3498db"
-    if bmi < 25:
-        return "Normal", "#27ae60"
-    if bmi < 30:
-        return "Overweight", "#e67e22"
+    if bmi < 18.5: return "Underweight", "#3498db"
+    if bmi < 25:   return "Normal",      "#27ae60"
+    if bmi < 30:   return "Overweight",  "#e67e22"
     return "Obese", "#c0392b"
 
 
 def risk_level(pred, proba):
     if pred == 0:
-        return "Low Risk", "#27ae60", "#eafaf1", "No major risk factors detected. Keep up your healthy habits."
+        return "Low Risk", "#27ae60", "rgba(39,174,96,0.1)", "No major risk factors detected. Keep up your healthy habits."
     if proba < 0.65:
-        return "Moderate Risk", "#e67e22", "#fef9f0", "Some risk factors present. Small lifestyle changes can make a real difference."
-    return "High Risk", "#c0392b", "#fdf2f2", "Several risk factors detected. Consider speaking with a healthcare professional."
+        return "Moderate Risk", "#e67e22", "rgba(230,126,34,0.1)", "Some risk factors present. Small lifestyle changes can make a real difference."
+    return "High Risk", "#c0392b", "rgba(192,57,43,0.1)", "Several risk factors detected. Consider speaking with a healthcare professional."
 
 
 def main():
-    st.set_page_config(page_title="Diabetes Risk Check", page_icon="", layout="centered")
+    st.set_page_config(page_title="Diabetes Risk Check", layout="centered")
     st.markdown(CSS, unsafe_allow_html=True)
 
     model, threshold = load_model()
@@ -133,20 +92,11 @@ def main():
         st.error(f"Model file not found: `{MODEL_PATH}`. Run the notebook save cell first.")
         return
 
-    # Header
-    st.markdown("""
-        <div style="text-align:center; padding: 32px 0 24px 0;">
-            <div style="font-size:2.2rem; font-weight:800; color:#1a1a2e; letter-spacing:-1px;">
-                Diabetes Risk Check
-            </div>
-            <div style="color:#888; font-size:0.95rem; margin-top:8px;">
-                Answer a few questions to estimate your diabetes risk
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    st.title("Diabetes Risk Check")
+    st.markdown('<div class="subtitle">Answer a few questions to estimate your diabetes risk</div>', unsafe_allow_html=True)
 
-    # Section 1 — About you
-    st.markdown('<div class="section-card"><div class="section-title">About you</div>', unsafe_allow_html=True)
+    # --- About you ---
+    st.subheader("About you")
     col1, col2 = st.columns(2)
     age = col1.slider("Age", 18, 90, 45)
     sex = col2.radio("Sex", ["Female", "Male"], horizontal=True)
@@ -158,12 +108,11 @@ def main():
     bmi = weight_kg / (height_cm / 100) ** 2
     bmi_cat, bmi_color = bmi_category(bmi)
     st.markdown(
-        f'BMI: <strong>{bmi:.1f}</strong>'
-        f'<span class="bmi-badge" style="background:{bmi_color}22; color:{bmi_color};">{bmi_cat}</span>',
+        f'<p style="margin:4px 0 12px 0;">BMI: <strong>{bmi:.1f}</strong>'
+        f'<span class="bmi-pill" style="background:{bmi_color}22;color:{bmi_color};">{bmi_cat}</span></p>',
         unsafe_allow_html=True,
     )
 
-    st.markdown("<br>", unsafe_allow_html=True)
     education = st.selectbox(
         "Highest level of education",
         options=[
@@ -192,10 +141,11 @@ def main():
         format_func=lambda x: x[0],
         index=5,
     )
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Section 2 — Health history
-    st.markdown('<div class="section-card"><div class="section-title">Health history</div>', unsafe_allow_html=True)
+    st.divider()
+
+    # --- Health history ---
+    st.subheader("Health history")
     col5, col6 = st.columns(2)
     high_bp    = col5.checkbox("High blood pressure")
     high_chol  = col6.checkbox("High cholesterol")
@@ -203,20 +153,22 @@ def main():
     stroke     = col6.checkbox("Ever had a stroke")
     heart      = col5.checkbox("Heart disease or heart attack")
     diff_walk  = col6.checkbox("Difficulty walking or climbing stairs")
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Section 3 — Lifestyle
-    st.markdown('<div class="section-card"><div class="section-title">Lifestyle</div>', unsafe_allow_html=True)
+    st.divider()
+
+    # --- Lifestyle ---
+    st.subheader("Lifestyle")
     col7, col8 = st.columns(2)
     smoker   = col7.checkbox("Smoked 100+ cigarettes in lifetime")
     phys_act = col8.checkbox("Physically active in past 30 days", value=True)
     fruits   = col7.checkbox("Eat fruit 1+ times per day", value=True)
     veggies  = col8.checkbox("Eat vegetables 1+ times per day", value=True)
     alcohol  = col7.checkbox("Heavy alcohol use")
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Section 4 — How you've been feeling
-    st.markdown('<div class="section-card"><div class="section-title">How have you been feeling?</div>', unsafe_allow_html=True)
+    st.divider()
+
+    # --- How you've been feeling ---
+    st.subheader("How have you been feeling?")
     gen_hlth = st.select_slider(
         "Overall health",
         options=["Excellent", "Very Good", "Good", "Fair", "Poor"],
@@ -229,9 +181,10 @@ def main():
     phys_hlth  = col10.slider("Days of poor physical health (past 30 days)", 0, 30, 0)
     healthcare = st.checkbox("Have health insurance or coverage", value=True)
     no_doc     = st.checkbox("Couldn't afford to see a doctor in the past year")
-    st.markdown('</div>', unsafe_allow_html=True)
 
-    # Predict
+    st.divider()
+
+    # --- Result ---
     row = {
         "HighBP": int(high_bp), "HighChol": int(high_chol),
         "CholCheck": int(chol_check), "BMI": round(bmi, 1),
@@ -249,50 +202,50 @@ def main():
     pred  = int(proba >= threshold)
     label, color, bg, advice = risk_level(pred, proba)
 
-    # Result card
+    st.subheader("Your result")
     st.markdown(f"""
-        <div class="result-card" style="background:{bg}; border: 2px solid {color}22;">
+        <div class="result-card" style="background:{bg}; border:2px solid {color}33;">
             <div class="result-label" style="color:{color};">{label}</div>
             <div class="result-score" style="color:{color};">Risk score: {proba:.0%}</div>
             <div class="gauge-track">
                 <div class="gauge-fill" style="width:{proba*100:.1f}%; background:{color};"></div>
             </div>
-            <div class="result-advice" style="color:#444;">{advice}</div>
+            <div class="result-advice">{advice}</div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Contributing factors
-    factors = []
-    if bmi >= 30:         factors.append(("BMI in obese range", color if pred else "#e67e22"))
-    elif bmi >= 25:       factors.append(("BMI in overweight range", "#e67e22"))
-    if age >= 45:         factors.append(("Age 45 or older", "#e67e22"))
-    if high_bp:           factors.append(("High blood pressure", "#c0392b"))
-    if high_chol:         factors.append(("High cholesterol", "#e67e22"))
-    if heart:             factors.append(("Heart disease history", "#c0392b"))
-    if stroke:            factors.append(("Stroke history", "#c0392b"))
-    if smoker:            factors.append(("Smoking history", "#e67e22"))
-    if not phys_act:      factors.append(("No recent physical activity", "#e67e22"))
-    if gen_hlth_val >= 4: factors.append(("Fair or poor general health", "#c0392b"))
-    if diff_walk:         factors.append(("Difficulty walking", "#e67e22"))
-
     with st.expander("What's contributing to your score?"):
+        factors = []
+        if bmi >= 30:         factors.append(("BMI in obese range", "#c0392b"))
+        elif bmi >= 25:       factors.append(("BMI in overweight range", "#e67e22"))
+        if age >= 45:         factors.append(("Age 45 or older", "#e67e22"))
+        if high_bp:           factors.append(("High blood pressure", "#c0392b"))
+        if high_chol:         factors.append(("High cholesterol", "#e67e22"))
+        if heart:             factors.append(("Heart disease history", "#c0392b"))
+        if stroke:            factors.append(("Stroke history", "#c0392b"))
+        if smoker:            factors.append(("Smoking history", "#e67e22"))
+        if not phys_act:      factors.append(("No recent physical activity", "#e67e22"))
+        if gen_hlth_val >= 4: factors.append(("Fair or poor general health", "#c0392b"))
+        if diff_walk:         factors.append(("Difficulty walking", "#e67e22"))
+
         if not factors:
             st.write("No major risk factors found in your answers.")
         else:
-            rows_html = "".join(
-                f'<div class="factor-row">'
-                f'<div class="factor-dot" style="background:{c};"></div>{name}'
-                f'</div>'
-                for name, c in factors
-            )
-            st.markdown(f'<div style="padding:4px 0">{rows_html}</div>', unsafe_allow_html=True)
+            for name, c in factors:
+                st.markdown(
+                    f'<div style="display:flex;align-items:center;gap:10px;padding:7px 0;'
+                    f'border-bottom:1px solid rgba(128,128,128,0.15);">'
+                    f'<div style="width:9px;height:9px;border-radius:50%;background:{c};flex-shrink:0;"></div>'
+                    f'{name}</div>',
+                    unsafe_allow_html=True,
+                )
 
-    st.markdown("""
-        <div style="text-align:center; color:#aaa; font-size:0.8rem; margin-top:32px; padding-bottom:16px;">
-            Trained on CDC BRFSS 2015 data — 253,680 survey responses.
-            For educational purposes only. Not a medical diagnosis.
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        '<div style="text-align:center;color:#888;font-size:0.8rem;margin-top:28px;padding-bottom:12px;">'
+        'Trained on CDC BRFSS 2015 — 253,680 survey responses. '
+        'For educational purposes only. Not a medical diagnosis.</div>',
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":
